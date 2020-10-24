@@ -6,7 +6,20 @@ pub enum Cmd {
   // your custom commands
   // multiple arguments are allowed
   // note that rename_all = "camelCase": you need to use "myCustomCommand" on JS
-  MyCustomCommand { argument: String },
-  SelectRepo { callback: String, error: String },
-  QueryLocks { callback: String, error: String },
+  MyCustomCommand {
+    argument: String,
+  },
+  SelectRepo {
+    callback: String,
+    error: String,
+  },
+  QueryLocks {
+    callback: String,
+    error: String,
+  },
+  FilterFile {
+    keyword: String,
+    callback: String,
+    error: String,
+  },
 }

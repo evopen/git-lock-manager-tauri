@@ -5,6 +5,7 @@
 
 use lazy_static::lazy_static;
 use nfd::DialogType;
+use rayon::prelude::*;
 use serde::Serialize;
 use std::fs::read_dir;
 use std::path::PathBuf;
@@ -12,7 +13,7 @@ use std::process::Command;
 use std::sync::Mutex;
 use std::time::SystemTime;
 use tauri::api::dialog::Response;
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 
 mod cmd;
 
@@ -22,11 +23,20 @@ lazy_static! {
   static ref REPO: Mutex<String> = Mutex::new(String::new());
 }
 
+fn is_hidden(entry: &DirEntry) -> bool {
+  entry
+    .file_name()
+    .to_str()
+    .map(|s| s.starts_with("."))
+    .unwrap_or(false)
+}
+
 fn cache_list(path: &str) {
   let mut cached_file = CACHED_LIST.lock().unwrap();
   cached_file.clear();
   let list: Vec<String> = WalkDir::new(path)
     .into_iter()
+    .filter_entry(|e| !is_hidden(e))
     .filter_map(|e| e.ok())
     .filter(|e| e.path().is_file())
     .map(|e| String::from(e.path().to_str().unwrap()))
@@ -119,6 +129,25 @@ fn main() {
                   .collect();
                 dbg!(&lock_entries);
                 Ok(lock_entries)
+              },
+              callback,
+              error,
+            ),
+            FilterFile {
+              keyword,
+              callback,
+              error,
+            } => tauri::execute_promise(
+              _webview,
+              move || {
+                let cached_list = CACHED_LIST.lock().unwrap();
+                let mut filtered_list: Vec<String> = cached_list
+                  .iter()
+                  .filter(|s| s.to_lowercase().contains(&keyword.to_lowercase()))
+                  .take(50)
+                  .map(|s| s.clone())
+                  .collect();
+                Ok(filtered_list)
               },
               callback,
               error,

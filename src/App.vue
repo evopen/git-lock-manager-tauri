@@ -18,20 +18,17 @@
       </a-button>
     </a-col>
   </a-row>
-  <a-list item-layout="horizontal" :data-source="lockEntries">
-    <template v-slot:renderItem="{ item }">
-      <a-list-item>
-        <a-card>{{ item.file }}</a-card>
-        <a-card>{{ item.user }}</a-card>
-        <a-button type="primary">Unlock</a-button>
-      </a-list-item>
-    </template>
-  </a-list>
+  <component :is="currentListComponent"/>
+  <!-- <Test/> -->
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import { promisified } from "tauri/api/tauri";
+// import LockList from "./components/FilterList.vue";
+import LockList from "./components/LockList.vue"
+import FilterList from "./components/FilterList.vue"
+
 // import { open } from "tauri/api-src/dialog";
 
 // interface OpenDialogOptions {
@@ -40,6 +37,8 @@ import { promisified } from "tauri/api/tauri";
 //   multiple?: boolean;
 //   directory?: boolean;
 // }
+
+
 
 interface LockEntry {
   file: string;
@@ -50,13 +49,23 @@ interface LockEntry {
 
 export default defineComponent({
   name: "App",
-  components: {},
+  components: {LockList, FilterList},
   data() {
     return {
       repo: "Select Repo",
       filter: "",
-      lockEntries: Array<LockEntry>()
+      lockEntries: Array<LockEntry>(),
+      fileList: Array<string>()
     };
+  },
+  computed: {
+    currentListComponent: function() {
+      if (this.filter.length == 0) {
+        return "LockList";
+      }
+
+      return "FilterList";
+    }
   },
   methods: {
     selectRepo() {
@@ -93,6 +102,14 @@ export default defineComponent({
       if (this.filter.length == 0) {
         this.queryLocks();
       }
+      promisified({
+        cmd: "filterFile",
+        keyword: this.filter
+      }).then(fileList => {
+      console.log("here");
+        this.fileList = fileList as Array<string>;
+        console.log(this.fileList[0]);
+      });
       // this.filter = newValue;
     }
   }

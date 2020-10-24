@@ -452,6 +452,7 @@ version = "0.1.0"
 dependencies = [
  "lazy_static",
  "nfd",
+ "rayon",
  "serde",
  "serde_json",
  "tauri",
