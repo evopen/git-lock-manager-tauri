@@ -1,21 +1,15 @@
 <template>
   <a-row>
-    <input
-      type="file"
-      ref="file"
-      style="display: none"
-      v-on:change="selectRepo"
-    />
-    <a-button type="primary" shape="round" @click="$refs.file.click()">
+    <a-button type="primary" shape="round" v-on:click="selectRepo">
       {{ repo }}
     </a-button>
   </a-row>
   <a-row type="flex">
     <a-col flex="auto">
       <a-input-search
-        v-model:value="value"
+        v-model:value="filter"
         placeholder="input search text"
-        @search="onSearch"
+        v-on:change="filterChange"
       />
     </a-col>
     <a-col flex="100px">
@@ -29,6 +23,15 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { promisified } from "tauri/api/tauri";
+// import { open } from "tauri/api-src/dialog";
+
+// interface OpenDialogOptions {
+//   filter?: string;
+//   defaultPath?: string;
+//   multiple?: boolean;
+//   directory?: boolean;
+// }
 
 // import HelloWorld from "./components/HelloWorld.vue";
 
@@ -38,14 +41,46 @@ export default defineComponent({
   data() {
     return {
       repo: "Select Repo",
-      filter: ""
+      filter: "",
+      lockEntries: []
     };
   },
   methods: {
-    selectRepo(file: File) {
-      console.log(file.name);
-      this.repo = file.name;
-      // alert(this.repo);
+    selectRepo() {
+      console.log("hello");
+      // const options: OpenDialogOptions = { directory: true };
+      // promisified({
+      //   cmd: "openDialog",
+      //   options
+      // }).then(response => {
+      //   console.log(response);
+      //   this.repo = response as string;
+      // });
+      // open({ directory: true }).then(response => {
+      //   console.log(response);
+      //   this.repo = response as string;
+      // });
+      promisified({
+        cmd: "selectRepo"
+      }).then(response => {
+        console.log(response);
+        this.repo = response as string;
+      });
+    },
+    queryLocks() {
+      promisified({
+        cmd: "queryLocks"
+      }).then(lockEntries => {
+        console.log(lockEntries);
+        // this.lockEntries = lock_entries as ;
+      });
+    },
+    filterChange(e: InputEvent) {
+      console.log(this.filter);
+      if (this.filter.length == 0) {
+        this.queryLocks();
+      }
+      // this.filter = newValue;
     }
   }
 });

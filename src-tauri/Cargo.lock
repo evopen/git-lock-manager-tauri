@@ -450,9 +450,12 @@ checksum = "aaf91faf136cb47367fa430cd46e37a788775e7fa104f8b4bcb3861dc389b724"
 name = "git-lock-manager"
 version = "0.1.0"
 dependencies = [
+ "lazy_static",
+ "nfd",
  "serde",
  "serde_json",
  "tauri",
+ "walkdir",
  "winres",
 ]
 
