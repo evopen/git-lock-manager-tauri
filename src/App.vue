@@ -18,7 +18,15 @@
       </a-button>
     </a-col>
   </a-row>
-  <a-list item-layout="horizontal"> </a-list>
+  <a-list item-layout="horizontal" :data-source="lockEntries">
+    <template v-slot:renderItem="{ item }">
+      <a-list-item>
+        <a-card>{{ item.file }}</a-card>
+        <a-card>{{ item.user }}</a-card>
+        <a-button type="primary">Unlock</a-button>
+      </a-list-item>
+    </template>
+  </a-list>
 </template>
 
 <script lang="ts">
@@ -33,6 +41,11 @@ import { promisified } from "tauri/api/tauri";
 //   directory?: boolean;
 // }
 
+interface LockEntry {
+  file: string;
+  user: string;
+}
+
 // import HelloWorld from "./components/HelloWorld.vue";
 
 export default defineComponent({
@@ -42,7 +55,7 @@ export default defineComponent({
     return {
       repo: "Select Repo",
       filter: "",
-      lockEntries: []
+      lockEntries: Array<LockEntry>()
     };
   },
   methods: {
@@ -71,8 +84,8 @@ export default defineComponent({
       promisified({
         cmd: "queryLocks"
       }).then(lockEntries => {
-        console.log(lockEntries);
-        // this.lockEntries = lock_entries as ;
+        this.lockEntries = lockEntries as Array<LockEntry>;
+        console.log(this.lockEntries[0]);
       });
     },
     filterChange(e: InputEvent) {
